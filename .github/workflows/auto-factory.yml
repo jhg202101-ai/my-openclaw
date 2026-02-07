@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Gemini smoke test (gemini-pro)
+      - name: Gemini smoke test (gemini-2.5-flash)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
@@ -24,7 +24,7 @@ jobs:
           echo "▶ Installing Gemini SDK"
           npm install @google/generative-ai
 
-          echo "▶ Running Gemini smoke test with gemini-pro"
+          echo "▶ Running Gemini smoke test with models/gemini-2.5-flash"
           node << 'EOF'
           const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -35,10 +35,14 @@ jobs:
           }
 
           const genAI = new GoogleGenerativeAI(apiKey);
-          const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+          const model = genAI.getGenerativeModel({
+            model: "models/gemini-2.5-flash"
+          });
 
           async function main() {
-            const result = await model.generateContent("Hello from GitHub Actions");
+            const result = await model.generateContent(
+              "Hello from GitHub Actions. Reply with one short sentence."
+            );
             console.log("▶ Gemini response:");
             console.log(result.response.text());
           }
