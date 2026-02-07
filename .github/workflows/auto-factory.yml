@@ -1,27 +1,44 @@
-- name: Gemini smoke test
-  env:
-    GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-  run: |
-    set -e
+name: Gemini API smoke test
 
-    echo "▶ Installing Gemini SDK"
-    npm install @google/generative-ai
+on:
+  workflow_dispatch:
+  push:
 
-    echo "▶ Running Gemini smoke test"
-    node << 'EOF'
-    const { GoogleGenerativeAI } = require("@google/generative-ai");
+jobs:
+  gemini-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
-    async function main() {
-      const result = await model.generateContent("Hello from GitHub Actions");
-      console.log("▶ Gemini response:");
-      console.log(result.response.text());
-    }
+      - name: Gemini smoke test
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          set -e
 
-    main().catch(err => {
-      console.error(err);
-      process.exit(1);
-    });
-    EOF
+          echo "▶ Installing Gemini SDK"
+          npm install @google/generative-ai
+
+          echo "▶ Running Gemini smoke test"
+          node << 'EOF'
+          const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+          const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+          async function main() {
+            const result = await model.generateContent("Hello from GitHub Actions");
+            console.log("▶ Gemini response:");
+            console.log(result.response.text());
+          }
+
+          main().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          EOF
