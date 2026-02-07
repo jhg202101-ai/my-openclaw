@@ -1,0 +1,36 @@
+name: OpenClaw (Gemini) smoke test
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  openclaw:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install OpenClaw
+        run: |
+          npm install -g openclaw@latest
+          openclaw --version
+          openclaw --help
+
+      - name: Gemini API smoke test
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          set -e
+          echo "▶ Running Gemini smoke test"
+
+          # 只跑「一次就結束」的最小命令
+          openclaw run \
+            --provider gemini \
+            --model gemini-1.5-pro \
+            --message "Say hello and print provider + model." \
+            --thinking low
