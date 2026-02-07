@@ -18,25 +18,35 @@ jobs:
       - name: Install OpenClaw
         run: |
           npm install -g openclaw@latest
+          echo "▶ OpenClaw version"
           openclaw --version
-          openclaw --help
 
-      - name: Gemini API smoke test
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - name: Inspect OpenClaw CLI (no assumptions)
         run: |
           set -e
 
-          echo "▶ Running OpenClaw Gemini smoke test"
-          echo "▶ Provider: gemini"
-          echo "▶ Model: gemini-1.5-pro"
-          echo "▶ Time: $(date)"
+          echo "▶ openclaw --help"
+          echo "----------------------------------------"
+          openclaw --help
+          echo "----------------------------------------"
 
-          # 一次性指令：跑完就結束（適合 GitHub Actions）
-          openclaw run \
-            --provider gemini \
-            --model gemini-1.5-pro \
-            --message "Say hello and print provider + model." \
-            --thinking low
+          echo ""
+          echo "▶ openclaw cron --help (if exists)"
+          echo "----------------------------------------"
+          openclaw cron --help || true
+          echo "----------------------------------------"
 
-          echo "✅ Smoke test finished"
+          echo ""
+          echo "▶ openclaw config --help (if exists)"
+          echo "----------------------------------------"
+          openclaw config --help || true
+          echo "----------------------------------------"
+
+          echo ""
+          echo "▶ openclaw agent --help (if exists)"
+          echo "----------------------------------------"
+          openclaw agent --help || true
+          echo "----------------------------------------"
+
+          echo ""
+          echo "▶ CLI inspection finished"
