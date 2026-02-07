@@ -28,8 +28,14 @@ jobs:
           node << 'EOF'
           const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-          const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+          const apiKey = process.env.GEMINI_API_KEY;
+          if (!apiKey) {
+            console.error("❌ GEMINI_API_KEY is missing");
+            process.exit(1);
+          }
+
+          const genAI = new GoogleGenerativeAI(apiKey);
+          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
           async function main() {
             const result = await model.generateContent("Hello from GitHub Actions");
@@ -38,7 +44,10 @@ jobs:
           }
 
           main().catch(err => {
+            console.error("❌ Gemini API error");
             console.error(err);
             process.exit(1);
           });
           EOF
+
+          echo "✅ Smoke test finished"
