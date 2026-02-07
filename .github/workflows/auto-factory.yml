@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -26,11 +26,17 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           set -e
-          echo "▶ Running Gemini smoke test"
 
-          # 只跑「一次就結束」的最小命令
+          echo "▶ Running OpenClaw Gemini smoke test"
+          echo "▶ Provider: gemini"
+          echo "▶ Model: gemini-1.5-pro"
+          echo "▶ Time: $(date)"
+
+          # 一次性指令：跑完就結束（適合 GitHub Actions）
           openclaw run \
             --provider gemini \
             --model gemini-1.5-pro \
             --message "Say hello and print provider + model." \
             --thinking low
+
+          echo "✅ Smoke test finished"
