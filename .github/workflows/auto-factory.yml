@@ -1,57 +1,43 @@
-name: Gemini API smoke test
+name: OpenClaw One-shot Agent
 
 on:
   workflow_dispatch:
-  push:
+    inputs:
+      prompt:
+        description: "Prompt for OpenClaw agent"
+        required: true
+        default: "用一句話說你是誰"
 
 jobs:
-  gemini-smoke:
+  openclaw:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
+
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: 20
 
-      - name: Gemini smoke test (gemini-2.5-flash)
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - name: Install OpenClaw
         run: |
-          set -e
+          npm install -g openclaw
+          openclaw --version
 
-          echo "▶ Installing Gemini SDK"
-          npm install @google/generative-ai
+      - name: Minimal OpenClaw setup (no gateway)
+        run: |
+          openclaw setup
+          openclaw config set gateway.mode local
+          openclaw models set google/gemini-2.5-flash
 
-          echo "▶ Running Gemini smoke test with models/gemini-2.5-flash"
-          node << 'EOF'
-          const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-          const apiKey = process.env.GEMINI_API_KEY;
-          if (!apiKey) {
-            console.error("❌ GEMINI_API_KEY is missing");
-            process.exit(1);
-          }
-
-          const genAI = new GoogleGenerativeAI(apiKey);
-          const model = genAI.getGenerativeModel({
-            model: "models/gemini-2.5-flash"
-          });
-
-          async function main() {
-            const result = await model.generateContent(
-              "Hello from GitHub Actions. Reply with one short sentence."
-            );
-            console.log("▶ Gemini response:");
-            console.log(result.response.text());
-          }
-
-          main().catch(err => {
-            console.error("❌ Gemini API error");
-            console.error(err);
-            process.exit(1);
-          });
-          EOF
-
-          echo "✅ Smoke test finished"
+      - name: Run OpenClaw agent (one-shot)
+        run: |
+          openclaw agent \
+            --agent main \
+            --message "${{ github.event.inputs.prompt }}"
